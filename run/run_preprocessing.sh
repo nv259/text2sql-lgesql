@@ -6,8 +6,8 @@ table_data='data/tables.json'
 train_out='data/train.lgesql.bin'
 dev_out='data/dev.lgesql.bin'
 table_out='data/tables.bin'
-vocab_glove='pretrained_models/glove.42b.300d/vocab_glove.txt'
-vocab='pretrained_models/glove.42b.300d/vocab.txt'
+vocab_glove='pretrained_models/word2vec_vi_words_300d/word2vec_vi_words_300dims.txt'
+vocab='pretrained_models/word2vec_vi_words_300d/vocab.txt'
 
 echo "Start to preprocess the original train dataset ..."
 python3 -u preprocess/process_dataset.py --dataset_path ${train_data} --raw_table_path ${table_data} --table_path ${table_out} --output_path 'data/train.bin' --skip_large #--verbose > train.log

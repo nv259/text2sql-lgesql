@@ -1,10 +1,11 @@
 #coding=utf8
 import os, sqlite3
 import numpy as np
-import stanza, torch
+import torch
 from nltk.corpus import stopwords
 from itertools import product, combinations
 from utils.constants import MAX_RELATIVE_DIST
+from vncorenlp import VNCoreNLP
 
 def is_number(s):
     try:
@@ -37,12 +38,15 @@ def quote_normalization(question):
 
 class Preprocessor():
 
-    def __init__(self, db_dir='data/database', db_content=True):
+    def __init__(self, db_dir='data/database', db_content=False, vncore_link='VnCoreNLP/VnCoreNLP-1.1.1.jar'):
         super(Preprocessor, self).__init__()
         self.db_dir = db_dir
         self.db_content = db_content
-        self.nlp = stanza.Pipeline('en', processors='tokenize,pos,lemma')#, use_gpu=False)
-        self.stopwords = stopwords.words("english")
+        # self.nlp = stanza.Pipeline('en', processors='tokenize,pos,lemma')#, use_gpu=False)
+        # change to use vncorenlp 
+        self.vncorenlp = VnCoreNLP(vncore_link)
+        # self.stopwords = stopwords.words("english")
+        self.stopwords = []
 
     def pipeline(self, entry: dict, db: dict, verbose: bool = False):
         """ db should be preprocessed """
@@ -55,15 +59,19 @@ class Preprocessor():
         """ Tokenize, lemmatize, lowercase table and column names for each database """
         table_toks, table_names = [], []
         for tab in db['table_names']:
-            doc = self.nlp(tab)
-            tab = [w.lemma.lower() for s in doc.sentences for w in s.words]
+            # doc = self.nlp(tab)
+            # tab = [w.lemma.lower() for s in doc.sentences for w in s.words]
+            tokens = self.vncorenlp(tab)
+            tab = [w.lower() for w in tokens[0]]
             table_toks.append(tab)
             table_names.append(" ".join(tab))
         db['processed_table_toks'], db['processed_table_names'] = table_toks, table_names
         column_toks, column_names = [], []
         for _, c in db['column_names']:
-            doc = self.nlp(c)
-            c = [w.lemma.lower() for s in doc.sentences for w in s.words]
+            # doc = self.nlp(c)
+            # c = [w.lemma.lower() for s in doc.sentences for w in s.words]
+            tokens = self.vncorenlp(c)
+            c = [w.lower() for w in tokens[0]]
             column_toks.append(c)
             column_names.append(" ".join(c))
         db['processed_column_toks'], db['processed_column_names'] = column_toks, column_names
@@ -128,11 +136,13 @@ class Preprocessor():
         """ Tokenize, lemmatize, lowercase question"""
         # stanza tokenize, lemmatize and POS tag
         question = ' '.join(quote_normalization(entry['question_toks']))
-        doc = self.nlp(question)
-        raw_toks = [w.text.lower() for s in doc.sentences for w in s.words]
-        toks = [w.lemma.lower() for s in doc.sentences for w in s.words]
-        pos_tags = [w.xpos for s in doc.sentences for w in s.words]
-
+        # doc = self.nlp(question)
+        tokens = self.vncorenlp(question)
+        raw_toks = [w.lower() for w in tokens[0]]
+        toks = [w.lower() for w in tokens[0]]
+        # pos_tags = [w.xpos for s in doc.sentences for w in s.words]
+        pos = self.vncorenlp(questions)
+        pos_tags = [w[1] for w in pos[0]]
         entry['raw_question_toks'] = raw_toks
         entry['processed_question_toks'] = toks
         entry['pos_tags'] = pos_tags
