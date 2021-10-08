@@ -17,7 +17,7 @@ from model.model_constructor import *
 def preprocess_database_and_dataset(db_dir='database/', table_path='data/tables.json', dataset_path='data/dev.json', method='lgesql'):
     tables = json.load(open(table_path, 'r'))
     dataset = json.load(open(dataset_path, 'r'))
-    processor = Preprocessor(db_dir=db_dir, db_content=True)
+    processor = Preprocessor(db_dir=db_dir, db_content=False)
     output_tables = process_tables(processor, tables)
     output_dataset = process_dataset(processor, dataset, output_tables)
     graph_processor = GraphProcessor()

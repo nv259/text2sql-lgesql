@@ -141,7 +141,7 @@ class Preprocessor():
         raw_toks = [w.lower() for w in tokens[0]]
         toks = [w.lower() for w in tokens[0]]
         # pos_tags = [w.xpos for s in doc.sentences for w in s.words]
-        pos = self.vncorenlp.pos_tag(questions)
+        pos = self.vncorenlp.pos_tag(question)
         pos_tags = [w[1] for w in pos[0]]
         entry['raw_question_toks'] = raw_toks
         entry['processed_question_toks'] = toks

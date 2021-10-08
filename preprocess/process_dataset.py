@@ -56,7 +56,7 @@ if __name__ == '__main__':
     arg_parser.add_argument('--verbose', action='store_true', help='whether print processing information')
     args = arg_parser.parse_args()
 
-    processor = Preprocessor(db_dir=args.db_dir, db_content=True)
+    processor = Preprocessor(db_dir=args.db_dir, db_content=False)
     # loading database and dataset
     if args.raw_table_path:
         # need to preprocess database items
