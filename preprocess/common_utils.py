@@ -5,7 +5,7 @@ import torch
 from nltk.corpus import stopwords
 from itertools import product, combinations
 from utils.constants import MAX_RELATIVE_DIST
-from vncorenlp import VNCoreNLP
+from vncorenlp import VnCoreNLP
 
 def is_number(s):
     try:
@@ -61,7 +61,7 @@ class Preprocessor():
         for tab in db['table_names']:
             # doc = self.nlp(tab)
             # tab = [w.lemma.lower() for s in doc.sentences for w in s.words]
-            tokens = self.vncorenlp(tab)
+            tokens = self.vncorenlp.tokenize(tab)
             tab = [w.lower() for w in tokens[0]]
             table_toks.append(tab)
             table_names.append(" ".join(tab))
@@ -70,7 +70,7 @@ class Preprocessor():
         for _, c in db['column_names']:
             # doc = self.nlp(c)
             # c = [w.lemma.lower() for s in doc.sentences for w in s.words]
-            tokens = self.vncorenlp(c)
+            tokens = self.vncorenlp.tokenize(c)
             c = [w.lower() for w in tokens[0]]
             column_toks.append(c)
             column_names.append(" ".join(c))
@@ -137,11 +137,11 @@ class Preprocessor():
         # stanza tokenize, lemmatize and POS tag
         question = ' '.join(quote_normalization(entry['question_toks']))
         # doc = self.nlp(question)
-        tokens = self.vncorenlp(question)
+        tokens = self.vncorenlp.tokenize(question)
         raw_toks = [w.lower() for w in tokens[0]]
         toks = [w.lower() for w in tokens[0]]
         # pos_tags = [w.xpos for s in doc.sentences for w in s.words]
-        pos = self.vncorenlp(questions)
+        pos = self.vncorenlp.pos_tag(questions)
         pos_tags = [w[1] for w in pos[0]]
         entry['raw_question_toks'] = raw_toks
         entry['processed_question_toks'] = toks
