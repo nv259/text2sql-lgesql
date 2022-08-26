@@ -51,7 +51,7 @@ def from_example_list_base(ex_list, device='cpu', train=True):
         # position_ids = [get_position_ids(ex, shuffle=train) + [0] * (max_len - len(ex.input_id)) for ex in ex_list]
         # batch.inputs["position_ids"] = torch.tensor(position_ids, dtype=torch.long, device=device)
         fit_seqs_lens = []
-        long_seqs_indices = ()
+        long_seqs_indices = set()
         long_seqs = []
         fit_seqs = []
         max_fit_seq_len = -1
