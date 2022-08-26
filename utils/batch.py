@@ -89,6 +89,9 @@ def from_example_list_base(ex_list, device='cpu', train=True):
                                                                    max_fit_seq_len,
                                                                    0)
                                             for idx, sample in enumerate(fit_seqs)]
+        batch.fit_inputs["position_ids"] = torch.tensor(batch.fit_inputs["position_ids"],
+                                                        dtype=torch.long,
+                                                        device=device)
         # extract representations after plm, remove [SEP]
         question_mask_plm = [ex.question_mask_plm +
                              [0] *
