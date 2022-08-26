@@ -21,15 +21,6 @@ def from_example_list_base(ex_list, device='cpu', train=True):
     plm = Example.plm
     pad_idx = Example.word_vocab[PAD] if plm is None else Example.tokenizer.pad_token_id
 
-    question_lens = [len(ex.question) for ex in ex_list]
-    batch.question_lens = torch.tensor(question_lens, dtype=torch.long, device=device)
-    batch.table_lens = torch.tensor([len(ex.table) for ex in ex_list], dtype=torch.long, device=device)
-    table_word_lens = [len(t) for ex in ex_list for t in ex.table]
-    batch.table_word_lens = torch.tensor(table_word_lens, dtype=torch.long, device=device)
-    batch.column_lens = torch.tensor([len(ex.column) for ex in ex_list], dtype=torch.long, device=device)
-    column_word_lens = [len(c) for ex in ex_list for c in ex.column]
-    batch.column_word_lens = torch.tensor(column_word_lens, dtype=torch.long, device=device)
-
     if plm is None: # glove.42B.300d
         questions = [ex.question_id + [pad_idx] * (batch.max_question_len - len(ex.question_id)) for ex in ex_list]
         batch.questions = torch.tensor(questions, dtype=torch.long, device=device)
@@ -65,6 +56,19 @@ def from_example_list_base(ex_list, device='cpu', train=True):
                 max_fit_seq_len = sample_len
             fit_seqs_lens.append(sample_len)
             fit_seqs.append(sample)
+            
+        question_lens = [len(ex.question) for idx, ex in enumerate(ex_list) if idx not in long_seqs_indices]
+        batch.question_lens = torch.tensor(question_lens, dtype=torch.long, device=device)
+        batch.table_lens = torch.tensor([len(ex.table) for idx, ex in ex_list if idx not in long_seqs_indices], 
+                                        dtype=torch.long, 
+                                        device=device)
+        table_word_lens = [len(t) for idx, ex in enumerate(ex_list) for t in ex.table if idx not in long_seqs_indices]
+        batch.table_word_lens = torch.tensor(table_word_lens, dtype=torch.long, device=device)
+        batch.column_lens = torch.tensor([len(ex.column) for idx, ex in enumerate(ex_list) if idx not in long_seqs_indices], 
+                                         dtype=torch.long, 
+                                         device=device)
+        column_word_lens = [len(c) for idx, ex in enumerate(ex_list) for c in ex.column if idx not in long_seqs_indices]
+        batch.column_word_lens = torch.tensor(column_word_lens, dtype=torch.long, device=device)
         # create a batch of fit inputs
         batch.fit_inputs["input_ids"] = [pad_sample_seq_with_id(sample.input_id, fit_seqs_lens[idx], 
                                                                 max_fit_seq_len, pad_idx)
