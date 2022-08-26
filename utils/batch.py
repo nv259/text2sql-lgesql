@@ -51,12 +51,14 @@ def from_example_list_base(ex_list, device='cpu', train=True):
         # position_ids = [get_position_ids(ex, shuffle=train) + [0] * (max_len - len(ex.input_id)) for ex in ex_list]
         # batch.inputs["position_ids"] = torch.tensor(position_ids, dtype=torch.long, device=device)
         fit_seqs_lens = []
+        long_seqs_indices = ()
         long_seqs = []
         fit_seqs = []
         max_fit_seq_len = -1
-        for sample in ex_list:
+        for idx, sample in enumerate(ex_list):
             sample_len = len(sample.input_id)
             if sample_len > 256:
+                long_seqs_indices.add(idx)
                 long_seqs.append(sample)
                 continue
             if max_fit_seq_len < sample_len:
@@ -88,18 +90,27 @@ def from_example_list_base(ex_list, device='cpu', train=True):
                                                                    0)
                                             for idx, sample in enumerate(fit_seqs)]
         # extract representations after plm, remove [SEP]
-        question_mask_plm = [ex.question_mask_plm + [0] * (max_fit_seq_len - len(ex.question_mask_plm)) for ex in ex_list]
+        question_mask_plm = [ex.question_mask_plm +
+                             [0] *
+                             (max_fit_seq_len - len(ex.question_mask_plm)) 
+                             for idx, ex in enumerate(ex_list) if idx not in long_seqs_indices]
         batch.question_mask_plm = torch.tensor(question_mask_plm, dtype=torch.bool, device=device)
-        table_mask_plm = [ex.table_mask_plm + [0] * (max_fit_seq_len - len(ex.table_mask_plm)) for ex in ex_list]
+        table_mask_plm = [ex.table_mask_plm +
+                          [0] *
+                          (max_fit_seq_len - len(ex.table_mask_plm)) 
+                          for idx, ex in enumerate(ex_list) if idx not in long_seqs_indices]
         batch.table_mask_plm = torch.tensor(table_mask_plm, dtype=torch.bool, device=device)
-        column_mask_plm = [ex.column_mask_plm + [0] * (max_fit_seq_len - len(ex.column_mask_plm)) for ex in ex_list]
+        column_mask_plm = [ex.column_mask_plm +
+                           [0] *
+                           (max_fit_seq_len - len(ex.column_mask_plm)) 
+                           for id, ex in enumerate(ex_list) if idx not in long_seqs_indices]
         batch.column_mask_plm = torch.tensor(column_mask_plm, dtype=torch.bool, device=device)
         # subword aggregation
-        question_subword_lens = [l for ex in ex_list for l in ex.question_subword_len]
+        question_subword_lens = [l for idx, ex in enumerate(ex_list) for l in ex.question_subword_len if idx not in long_seqs_indices]
         batch.question_subword_lens = torch.tensor(question_subword_lens, dtype=torch.long, device=device)
-        table_subword_lens = [l for ex in ex_list for l in ex.table_subword_len]
+        table_subword_lens = [l for idx, ex in enumerate(ex_list) for l in ex.table_subword_len if idx not in long_seqs_indices]
         batch.table_subword_lens = torch.tensor(table_subword_lens, dtype=torch.long, device=device)
-        column_subword_lens = [l for ex in ex_list for l in ex.column_subword_len]
+        column_subword_lens = [l for idx, ex in enumerate(ex_list) for l in ex.column_subword_len if idx not in long_seqs_indices]
         batch.column_subword_lens = torch.tensor(column_subword_lens, dtype=torch.long, device=device)
 
     batch.question_unk_mask, batch.table_unk_mask, batch.column_unk_mask = None, None, None
