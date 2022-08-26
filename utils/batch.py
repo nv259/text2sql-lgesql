@@ -103,7 +103,7 @@ def from_example_list_base(ex_list, device='cpu', train=True):
         column_mask_plm = [ex.column_mask_plm +
                            [0] *
                            (max_fit_seq_len - len(ex.column_mask_plm)) 
-                           for id, ex in enumerate(ex_list) if idx not in long_seqs_indices]
+                           for idx, ex in enumerate(ex_list) if idx not in long_seqs_indices]
         batch.column_mask_plm = torch.tensor(column_mask_plm, dtype=torch.bool, device=device)
         # subword aggregation
         question_subword_lens = [l for idx, ex in enumerate(ex_list) for l in ex.question_subword_len if idx not in long_seqs_indices]
