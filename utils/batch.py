@@ -77,13 +77,13 @@ def from_example_list_base(ex_list, device='cpu', train=True):
         batch.fit_inputs["attention_mask"] = torch.tensor(batch.fit_inputs["attention_mask"],
                                                           dtype=torch.float,
                                                           device=device)
-        batch.fit_inputs["token_type_ids"] = [pad_sample_seq_with_id(sample.segment_id,
-                                                                     len(sample.segment_id),
-                                                                     max_fit_seq_len, 0)
-                                              for sample in fit_seqs]
-        batch.fit_inputs["token_type_ids"] = torch.tensor(batch.fit_inputs["token_type_ids"],
-                                                          dtype=torch.long,
-                                                          device=device)
+        # batch.fit_inputs["token_type_ids"] = [pad_sample_seq_with_id(sample.segment_id,
+        #                                                              len(sample.segment_id),
+        #                                                              max_fit_seq_len, 0)
+        #                                       for sample in fit_seqs]
+        # batch.fit_inputs["token_type_ids"] = torch.tensor(batch.fit_inputs["token_type_ids"],
+        #                                                   dtype=torch.long,
+        #                                                   device=device)
         batch.fit_inputs["position_ids"] = [pad_sample_seq_with_id(get_position_ids(sample, shuffle=train),
                                                                    fit_seqs_lens[idx],
                                                                    max_fit_seq_len,
