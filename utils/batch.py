@@ -54,7 +54,7 @@ def from_example_list_base(ex_list, device='cpu', train=True):
         long_seqs = []
         fit_seqs = []
         max_fit_seq_len = -1
-        for sample in enumerate(ex_list):
+        for sample in ex_list:
             sample_len = len(sample.input_id)
             if sample > 256:
                 long_seqs.append(sample)
