@@ -95,7 +95,7 @@ class SubwordAggregation(nn.Module):
         tables = self.aggregation(tables, mask=batch.table_subword_mask)
         columns = self.aggregation(columns, mask=batch.column_subword_mask)
 
-        new_questions, new_tables, new_columns = questions.new_zeros(len(batch), batch.max_question_len, self.hidden_size),\
+        new_questions, new_tables, new_columns = questions.new_zeros(len(batch.fit_inputs), batch.max_question_len, self.hidden_size),\
             tables.new_zeros(batch.table_word_mask.size(0), batch.max_table_word_len, self.hidden_size), \
                 columns.new_zeros(batch.column_word_mask.size(0), batch.max_column_word_len, self.hidden_size)
         new_questions = new_questions.masked_scatter_(batch.question_mask.unsqueeze(-1), questions)
