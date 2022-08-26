@@ -59,7 +59,7 @@ def from_example_list_base(ex_list, device='cpu', train=True):
             
         question_lens = [len(ex.question) for idx, ex in enumerate(ex_list) if idx not in long_seqs_indices]
         batch.question_lens = torch.tensor(question_lens, dtype=torch.long, device=device)
-        batch.table_lens = torch.tensor([len(ex.table) for idx, ex in ex_list if idx not in long_seqs_indices], 
+        batch.table_lens = torch.tensor([len(ex.table) for idx, ex in enumerate(ex_list) if idx not in long_seqs_indices], 
                                         dtype=torch.long, 
                                         device=device)
         table_word_lens = [len(t) for idx, ex in enumerate(ex_list) for t in ex.table if idx not in long_seqs_indices]
