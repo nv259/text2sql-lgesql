@@ -64,7 +64,7 @@ def from_example_list_base(ex_list, device='cpu', train=True):
             fit_seqs_lens.append(sample_len)
             fit_seqs.append(sample)
         # create a batch of fit inputs
-        batch.fit_inputs["input_ids"] = [pad_sample_seq_with_id(sample, fit_seqs_lens[idx], 
+        batch.fit_inputs["input_ids"] = [pad_sample_seq_with_id(sample.input_id, fit_seqs_lens[idx], 
                                                                 max_fit_seq_len, pad_idx)
                                          for idx, sample in enumerate(fit_seqs)]
         batch.fit_inputs["input_ids"] = torch.tensor(
