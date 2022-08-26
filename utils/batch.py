@@ -39,23 +39,60 @@ def from_example_list_base(ex_list, device='cpu', train=True):
         batch.columns = torch.tensor(columns, dtype=torch.long, device=device)
     else:
         # prepare inputs for pretrained models
-        batch.inputs = {"input_ids": None, "attention_mask": None, "token_type_ids": None, "position_ids": None}
-        input_lens = [len(ex.input_id) for ex in ex_list]
-        max_len = max(input_lens)
-        input_ids = [ex.input_id + [pad_idx] * (max_len - len(ex.input_id)) for ex in ex_list]
-        batch.inputs["input_ids"] = torch.tensor(input_ids, dtype=torch.long, device=device)
-        attention_mask = [[1] * l + [0] * (max_len - l) for l in input_lens]
-        batch.inputs["attention_mask"] = torch.tensor(attention_mask, dtype=torch.float, device=device)
-        token_type_ids = [ex.segment_id + [0] * (max_len - len(ex.segment_id)) for ex in ex_list]
-        batch.inputs["token_type_ids"] = torch.tensor(token_type_ids, dtype=torch.long, device=device)
-        position_ids = [get_position_ids(ex, shuffle=train) + [0] * (max_len - len(ex.input_id)) for ex in ex_list]
-        batch.inputs["position_ids"] = torch.tensor(position_ids, dtype=torch.long, device=device)
+        batch.fit_inputs = {"input_ids": None, "attention_mask": None, "token_type_ids": None, "position_ids": None}
+        # input_lens = [len(ex.input_id) for ex in ex_list]
+        # max_len = max(input_lens)
+        # input_ids = [ex.input_id + [pad_idx] * (max_len - len(ex.input_id)) for ex in ex_list]
+        # batch.inputs["input_ids"] = torch.tensor(input_ids, dtype=torch.long, device=device)
+        # attention_mask = [[1] * l + [0] * (max_len - l) for l in input_lens]
+        # batch.inputs["attention_mask"] = torch.tensor(attention_mask, dtype=torch.float, device=device)
+        # token_type_ids = [ex.segment_id + [0] * (max_len - len(ex.segment_id)) for ex in ex_list]
+        # batch.inputs["token_type_ids"] = torch.tensor(token_type_ids, dtype=torch.long, device=device)
+        # position_ids = [get_position_ids(ex, shuffle=train) + [0] * (max_len - len(ex.input_id)) for ex in ex_list]
+        # batch.inputs["position_ids"] = torch.tensor(position_ids, dtype=torch.long, device=device)
+        fit_seqs_lens = []
+        long_seqs = []
+        fit_seqs = []
+        max_fit_seq_len = -1
+        for sample in enumerate(ex_list):
+            sample_len = len(sample.input_id)
+            if sample > 256:
+                long_seqs.append(sample)
+                continue
+            if max_fit_seq_len < sample_len:
+                max_fit_seq_len = sample_len
+            fit_seqs_lens.append(sample_len)
+            fit_seqs.append(sample)
+        # create a batch of fit inputs
+        batch.fit_inputs["input_ids"] = [pad_sample_seq_with_id(sample, fit_seqs_lens[idx], 
+                                                                max_fit_seq_len, pad_idx)
+                                         for idx, sample in enumerate(fit_seqs)]
+        batch.fit_inputs["input_ids"] = torch.tensor(
+                                        batch.fit_inputs["input_ids"],
+                                        dtype=torch.long, device=device)
+        batch.fit_inputs["attention_mask"] = [pad_sample_seq_with_id([1]*l, l, max_fit_seq_len, 0)
+                                              for l in fit_seqs_lens]
+        batch.fit_inputs["attention_mask"] = torch.tensor(batch.fit_inputs["attention_mask"],
+                                                          dtype=torch.float,
+                                                          device=device)
+        batch.fit_inputs["token_type_ids"] = [pad_sample_seq_with_id(sample.segment_id,
+                                                                     len(sample.segment_id),
+                                                                     max_fit_seq_len, 0)
+                                              for sample in fit_seqs]
+        batch.fit_inputs["token_type_ids"] = torch.tensor(batch.fit_inputs["token_type_ids"],
+                                                          dtype=torch.long,
+                                                          device=device)
+        batch.fit_inputs["position_ids"] = [pad_sample_seq_with_id(get_position_ids(sample, shuffle=train),
+                                                                   fit_seqs_lens[idx],
+                                                                   max_fit_seq_len,
+                                                                   0)
+                                            for idx, sample in enumerate(fit_seqs)]
         # extract representations after plm, remove [SEP]
-        question_mask_plm = [ex.question_mask_plm + [0] * (max_len - len(ex.question_mask_plm)) for ex in ex_list]
+        question_mask_plm = [ex.question_mask_plm + [0] * (max_fit_seq_len - len(ex.question_mask_plm)) for ex in ex_list]
         batch.question_mask_plm = torch.tensor(question_mask_plm, dtype=torch.bool, device=device)
-        table_mask_plm = [ex.table_mask_plm + [0] * (max_len - len(ex.table_mask_plm)) for ex in ex_list]
+        table_mask_plm = [ex.table_mask_plm + [0] * (max_fit_seq_len - len(ex.table_mask_plm)) for ex in ex_list]
         batch.table_mask_plm = torch.tensor(table_mask_plm, dtype=torch.bool, device=device)
-        column_mask_plm = [ex.column_mask_plm + [0] * (max_len - len(ex.column_mask_plm)) for ex in ex_list]
+        column_mask_plm = [ex.column_mask_plm + [0] * (max_fit_seq_len - len(ex.column_mask_plm)) for ex in ex_list]
         batch.column_mask_plm = torch.tensor(column_mask_plm, dtype=torch.bool, device=device)
         # subword aggregation
         question_subword_lens = [l for ex in ex_list for l in ex.question_subword_len]
@@ -100,6 +137,10 @@ def from_example_list_base(ex_list, device='cpu', train=True):
                 batch.column_unk_mask = column_unk_mask.masked_scatter_(torch.clone(column_unk_mask), oov_flag).to(device)
                 batch.column_unk_embeddings = torch.tensor([e for e in unk_word_embeddings if e is not None], dtype=torch.float, device=device)
     return batch
+
+def pad_sample_seq_with_id(seq, orig_len, max_len, pad_id):
+    padded_seq = seq + [pad_id]*(max_len - orig_len)
+    return padded_seq
 
 def from_example_list_text2sql(ex_list, device='cpu', train=True, **kwargs):
     """ New fields: batch.lens, batch.max_len, batch.relations, batch.relations_mask

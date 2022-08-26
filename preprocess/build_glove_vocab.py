@@ -1,7 +1,8 @@
 #coding=utf8
 import argparse, os, sys, pickle, json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from collections import Counter
+from collections import Counter, OrderedDict
+from torchtext.vocab import vocab
 
 def construct_vocab_from_dataset(*data_paths, table_path='data/tables.bin', mwf=4, reference_file=None, output_path=None, sep='\t'):
     words = []
@@ -42,6 +43,31 @@ def construct_vocab_from_dataset(*data_paths, table_path='data/tables.bin', mwf=
                 of.write(w + sep + str(c) + '\n')
     return len(vocab)
 
+def construct_vocab_from_dataset_V2(
+    *data_paths, 
+    table_path='data/tables.bin',
+    mwf=4, 
+    reference_file=None, 
+    output_path=None, sep='\t'):
+    # words = []
+    # tables = pickle.load(open(table_path, 'rb'))
+    # for fp in data_paths:
+    #     dataset = pickle.load(open(fp, 'rb'))
+    #     for ex in dataset:
+    #         words.extend(ex['processed_question_toks'])
+    #         db = tables[ex['db_id']]
+    #         words.extend(['table'] * len(db['table_names']))
+    #         words.extend(db['column_types'])
+    #         for c in db['processed_column_toks']:
+    #             words.extend(c)
+    #         for t in db['processed_table_toks']:
+    #             words.extend(t)
+    # counter = Counter(words)
+    # sorted_by_freq = sorted(counter.items(), key=lambda x: x[1], reverse=True)
+    # ordered_dict = OrderedDict(sorted_by_freq)
+    # vocab = vocab(ordered_dict, min_freq=mwf)
+    pass
+    
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
