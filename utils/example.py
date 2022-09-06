@@ -129,11 +129,14 @@ class Example():
                 for w in s:
                     toks = t.convert_tokens_to_ids(t.tokenize(w))
                     for tok in toks:
-                        self.column_id.extend(toks)
-                        self.column_subword_len.append(len(toks))
-                        l += len(toks)
-                        self.truncated_column = self.column[:idx+1]
-                        curr_seq_len +=1
+                        if curr_seq_len < 257:
+                            self.column_id.extend(toks)
+                            self.column_subword_len.append(len(toks))
+                            l += len(toks)
+                            self.truncated_column = self.column[:idx+1]
+                            curr_seq_len +=1
+                        else:
+                            break
                 self.column_word_len.append(l)
             self.column_mask_plm = [1] * len(self.column_id) + [0]
             self.column_id.append(t.sep_token_id)
