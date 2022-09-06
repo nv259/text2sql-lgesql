@@ -46,10 +46,10 @@ def from_example_list_base(ex_list, device='cpu', train=True):
         batch.inputs["input_ids"] = torch.tensor(input_ids, dtype=torch.long, device=device)
         attention_mask = [[1] * l + [0] * (max_len - l) for l in input_lens]
         batch.inputs["attention_mask"] = torch.tensor(attention_mask, dtype=torch.float, device=device)
-        token_type_ids = [ex.segment_id + [0] * (max_len - len(ex.segment_id)) for ex in ex_list]
-        batch.inputs["token_type_ids"] = torch.tensor(token_type_ids, dtype=torch.long, device=device)
-        position_ids = [get_position_ids(ex, shuffle=train) + [0] * (max_len - len(ex.input_id)) for ex in ex_list]
-        batch.inputs["position_ids"] = torch.tensor(position_ids, dtype=torch.long, device=device)
+        # token_type_ids = [ex.segment_id + [0] * (max_len - len(ex.segment_id)) for ex in ex_list]
+        # batch.inputs["token_type_ids"] = torch.tensor(token_type_ids, dtype=torch.long, device=device)
+        # position_ids = [get_position_ids(ex, shuffle=train) + [0] * (max_len - len(ex.input_id)) for ex in ex_list]
+        # batch.inputs["position_ids"] = torch.tensor(position_ids, dtype=torch.long, device=device)
         # extract representations after plm, remove [SEP]
         question_mask_plm = [ex.question_mask_plm + [0] * (max_len - len(ex.question_mask_plm)) for ex in ex_list]
         batch.question_mask_plm = torch.tensor(question_mask_plm, dtype=torch.bool, device=device)
