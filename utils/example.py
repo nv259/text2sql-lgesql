@@ -67,7 +67,8 @@ class Example():
             self.table = [['table'] + t for t in db['processed_table_toks']]
             self.table_id = [[Example.word_vocab[w] for w in t] for t in self.table]
         else:
-            curr_seq_len = 0
+            # included cls token 
+            curr_seq_len = 1
             t = Example.tokenizer
             self.is_long_seq = False
             self.question = [q.lower() for q in ex['raw_question_toks']]
@@ -75,15 +76,20 @@ class Example():
             self.question_id = [t.cls_token_id] # map token to id
             self.question_mask_plm = [] # remove SEP token in our case
             self.question_subword_len = [] # subword len for each word, exclude SEP token
-            for w in self.question:
-                if curr_seq_len >= 256:
+            for idx, w in enumerate(self.question):
+                if curr_seq_len >= 257:
                     self.is_long_seq = True 
-                    self.truncated_question = self.question[:256]
                     break
+                
                 toks = t.convert_tokens_to_ids(t.tokenize(w))
-                self.question_id.extend(toks)
-                self.question_subword_len.append(len(toks))
-                curr_seq_len += 1
+                for tok in toks:
+                    if curr_seq_len < 257:
+                        self.question_id.append(tok)
+                        self.question_subword_len.append(len(toks))
+                        curr_seq_len += 1
+                        self.truncated_question = self.question[:idx+1]
+                    else:
+                        break
             self.question_mask_plm = [0] + [1] * (len(self.question_id) - 1) + [0]
             self.question_id.append(t.sep_token_id)
             curr_seq_len += 1 
@@ -92,18 +98,22 @@ class Example():
             self.truncated_table = self.table
             self.table_id, self.table_mask_plm, self.table_subword_len = [], [], []
             self.table_word_len = []
-            for s in self.table:
-                if curr_seq_len >= 256:
+            for idx, s in enumerate(self.table):
+                if curr_seq_len >= 257:
                     self.is_long_seq = True
-                    self.truncated_table = self.table[:256-curr_seq_len]
                     break
                 l = 0
                 for w in s:
                     toks = t.convert_tokens_to_ids(t.tokenize(w))
-                    self.table_id.extend(toks)
-                    self.table_subword_len.append(len(toks))
-                    l += len(toks)
-                    curr_seq_len += 1 
+                    for tok in toks:
+                        if curr_seq_len < 257:
+                            self.table_id.extend(toks)
+                            self.table_subword_len.append(len(toks))
+                            l += len(toks)
+                            self.truncated_table = self.table[:idx+1]
+                            curr_seq_len += 1 
+                        else:
+                            break
                 self.table_word_len.append(l)
             self.table_mask_plm = [1] * len(self.table_id)
 
@@ -111,22 +121,23 @@ class Example():
             self.truncated_column = self.column
             self.column_id, self.column_mask_plm, self.column_subword_len = [], [], []
             self.column_word_len = []
-            for s in self.column:
+            for idx, s in enumerate(self.column):
                 if curr_seq_len >= 256:
                     self.is_long_seq =  True
-                    self.truncated_column = self.column[:256-curr_seq_len]
                     break
                 l = 0
                 for w in s:
                     toks = t.convert_tokens_to_ids(t.tokenize(w))
-                    self.column_id.extend(toks)
-                    self.column_subword_len.append(len(toks))
-                    l += len(toks)
-                    curr_seq_len +=1
+                    for tok in toks:
+                        self.column_id.extend(toks)
+                        self.column_subword_len.append(len(toks))
+                        l += len(toks)
+                        self.truncated_column = self.column[:idx+1]
+                        curr_seq_len +=1
                 self.column_word_len.append(l)
             self.column_mask_plm = [1] * len(self.column_id) + [0]
             self.column_id.append(t.sep_token_id)
-
+            curr_seq_len+=1
             self.input_id = self.question_id + self.table_id + self.column_id
             self.segment_id = [0] * len(self.question_id) + [1] * (len(self.table_id) + len(self.column_id)) \
                 if Example.plm != 'grappa_large_jnt' and not Example.plm.startswith('roberta') \
@@ -149,6 +160,8 @@ def get_position_ids(ex, shuffle=True):
     # [CLS] q1 q2 ... [SEP] * t1 c1 c2 c3 t2 c4 c5 ... [SEP]
     db, table_word_len, column_word_len = ex.db, ex.table_word_len, ex.column_word_len
     table_num, column_num = len(db['table_names']), len(db['column_names'])
+    if ex.is_long_seq:
+        table_num, column_num = len()
     question_position_id = list(range(len(ex.question_id)))
     start = len(question_position_id)
     table_position_id, column_position_id = [None] * table_num, [None] * column_num
