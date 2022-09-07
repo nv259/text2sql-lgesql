@@ -138,7 +138,7 @@ class Example():
                             self.column_id.append(tok)
                             inserted_toks.append(tok)
                             self.truncated_column = self.column[:idx+1]
-                            curr_seq_len +=1
+                            self.curr_seq_len +=1
                         else:
                             break
                     self.column_subword_len.append(len(inserted_toks))
