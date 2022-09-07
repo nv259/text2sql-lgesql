@@ -77,14 +77,14 @@ class Example():
             self.question_mask_plm = [] # remove SEP token in our case
             self.question_subword_len = [] # subword len for each word, exclude SEP token
             for idx, w in enumerate(self.question):
-                if self.curr_seq_len >= 257:
+                if self.curr_seq_len >= 256:
                     self.is_long_seq = True 
                     break
                 
                 toks = t.convert_tokens_to_ids(t.tokenize(w))
                 inserted_toks = []
                 for tok in toks:
-                    if self.curr_seq_len < 257:
+                    if self.curr_seq_len < 256:
                         self.question_id.append(tok)
                         inserted_toks.append(tok)
                         self.curr_seq_len += 1
@@ -101,7 +101,7 @@ class Example():
             self.table_id, self.table_mask_plm, self.table_subword_len = [], [], []
             self.table_word_len = []
             for idx, s in enumerate(self.table):
-                if self.curr_seq_len >= 257:
+                if self.curr_seq_len >= 256:
                     self.is_long_seq = True
                     break
                 l = 0
@@ -109,7 +109,7 @@ class Example():
                     toks = t.convert_tokens_to_ids(t.tokenize(w))
                     inserted_toks = []
                     for tok in toks:
-                        if self.curr_seq_len < 257:
+                        if self.curr_seq_len < 256:
                             self.table_id.append(tok)
                             inserted_toks.append(tok)
                             self.truncated_table = self.table[:idx+1]
@@ -134,7 +134,7 @@ class Example():
                     toks = t.convert_tokens_to_ids(t.tokenize(w))
                     inserted_toks = []
                     for tok in toks:
-                        if self.curr_seq_len < 257:
+                        if self.curr_seq_len < 256:
                             self.column_id.append(tok)
                             inserted_toks.append(tok)
                             self.truncated_column = self.column[:idx+1]
