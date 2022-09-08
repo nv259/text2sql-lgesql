@@ -96,7 +96,7 @@ class Example():
             self.question_id.append(t.sep_token_id)
             self.curr_seq_len += 1 
 
-            self.table = [['table'] + t.lower().split() for t in db['table_names']]
+            self.table = [['table'] + t.lower().split() for t in db['processed_table_names']]
             self.truncated_table = self.table
             self.table_id, self.table_mask_plm, self.table_subword_len = [], [], []
             self.table_word_len = []
@@ -121,7 +121,7 @@ class Example():
                 self.table_word_len.append(l)
             self.table_mask_plm = [1] * len(self.table_id)
 
-            self.column = [[db['column_types'][idx].lower()] + c.lower().split() for idx, (_, c) in enumerate(db['column_names'])]
+            self.column = [[db['column_types'][idx].lower()] + c.lower().split() for idx, (_, c) in enumerate(db['processed_column_names'])]
             self.truncated_column = self.column
             self.column_id, self.column_mask_plm, self.column_subword_len = [], [], []
             self.column_word_len = []
