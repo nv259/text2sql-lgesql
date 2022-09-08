@@ -121,7 +121,7 @@ class Example():
                 self.table_word_len.append(l)
             self.table_mask_plm = [1] * len(self.table_id)
 
-            self.column = [[db['column_types'][idx].lower()] + c.lower().split() for idx, (_, c) in enumerate(db['processed_column_names'])]
+            self.column = [[db['column_types'][idx].lower()] + c.lower().split() for idx, (_, c) in enumerate(db['column_names'])]
             self.truncated_column = self.column
             self.column_id, self.column_mask_plm, self.column_subword_len = [], [], []
             self.column_word_len = []
