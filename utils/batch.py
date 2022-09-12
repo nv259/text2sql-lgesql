@@ -42,7 +42,7 @@ def from_example_list_base(ex_list, device='cpu', train=True):
         batch.inputs = {"input_ids": None, "attention_mask": None, "token_type_ids": None, "position_ids": None}
         # input_lens = [len(ex.input_id) for ex in ex_list]
         # max_len = max(input_lens)
-        long_seqs_set = () 
+        long_seqs_set = set() 
         batch.input_lens = []
         batch.max_len = 0
         for idx, ex in enumerate(ex_list):
