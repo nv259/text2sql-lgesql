@@ -58,7 +58,43 @@ class GraphInputLayerPLM(nn.Module):
         pass
 
     def forward(self, batch):
-        outputs = self.plm_model(**batch.inputs)[0] # final layer hidden states
+        
+        if batch.max_len <= 256:
+            outputs = self.plm_model(**batch.inputs)[0] # final layer hidden states
+            # batch_size x max_seq_len x hidden_size
+        else:
+            plm_outputs = []
+            for idx, sample_id in enumerate(batch.inputs["input_ids"]):
+                new_plm_input = {"input_ids": None, "attention_mask": None, "token_type_ids": None, "position_ids": None}
+                if batch.input_lens[idx] <= 256:
+                    new_plm_input["input_ids"] = [sample_id[:256]]
+                    new_plm_input["attention_mask"] = [batch.inputs["attention_mask"][:256]]
+                    output = self.plm_model(**new_plm_input)[0]
+                    # 1xseq_lenxhidden_size
+                    output_size = output.size()
+                    pad_tensor = output.new_zeros((output_size[0],
+                                                   256-output_size[1],
+                                                   output_size[ -1]))
+                    # pad to return to the original tensor size
+                    output = torch.concat((output, pad_tensor), dim=1)
+                    plm_outputs.append(output)
+                else:
+                    question_mask = batch.question_mask_plm[idx]
+                    table_mask = batch.table_mask_plm[idx]
+                    column_mask = batch.column_mask_plm[idx]
+                    question_ids = [sample_id.masked_select(question_mask)]
+                    tables_ids = [sample_id.masked_select(table_mask)]                    
+                    column_ids = [sample_id.masked_select(column_mask)]
+                    question_output = self.plm_model(question_ids)
+                    table_output = self.plm_model(tables_ids)
+                    column_output = self.plm_model(column_ids)
+                    long_seq_output = torch.concat((question_output,
+                                                    table_output,
+                                                    column_output),
+                                                    dim=1)
+                    plm_outputs.append(long_seq_output)
+            outputs = torch.concat(plm_outputs, dim=0)
+
         question, table, column = self.subword_aggregation(outputs, batch)
         input_dict = {
             "question": self.dropout_layer(question),

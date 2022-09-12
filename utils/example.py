@@ -68,7 +68,6 @@ class Example():
             self.table_id = [[Example.word_vocab[w] for w in t] for t in self.table]
         else:
             # included cls token 
-            self.curr_seq_len = 1
             t = Example.tokenizer
             self.is_long_seq = False
             self.question = [q.lower() for q in ex['raw_question_toks']]
@@ -76,77 +75,39 @@ class Example():
             self.question_id = [t.cls_token_id] # map token to id
             self.question_mask_plm = [] # remove SEP token in our case
             self.question_subword_len = [] # subword len for each word, exclude SEP token
-            for idx, w in enumerate(self.question):
-                if self.curr_seq_len >= 255:
-                    self.is_long_seq = True 
-                    break
-                
+            for w in self.question:       
                 toks = t.convert_tokens_to_ids(t.tokenize(w))
-                inserted_toks = []
-                for tok in toks:
-                    if self.curr_seq_len < 255:
-                        self.question_id.append(tok)
-                        inserted_toks.append(tok)
-                        self.curr_seq_len += 1
-                        self.truncated_question = self.question[:idx+1]
-                    else:
-                        break
-                self.question_subword_len.append(len(inserted_toks))
+                self.question_id.extend(toks)
+                self.question_subword_len.append(len(toks))
             self.question_mask_plm = [0] + [1] * (len(self.question_id) - 1) + [0]
             self.question_id.append(t.sep_token_id)
-            self.curr_seq_len += 1 
 
             self.table = [['table'] + t.lower().split() for t in db['processed_table_names']]
-            self.truncated_table = self.table
             self.table_id, self.table_mask_plm, self.table_subword_len = [], [], []
             self.table_word_len = []
-            for idx, s in enumerate(self.table):
-                if self.curr_seq_len >= 255:
-                    self.is_long_seq = True
-                    break
+            for s in self.table:
                 l = 0
                 for w in s:
                     toks = t.convert_tokens_to_ids(t.tokenize(w))
-                    inserted_toks = []
-                    for tok in toks:
-                        if self.curr_seq_len < 255:
-                            self.table_id.append(tok)
-                            inserted_toks.append(tok)
-                            self.truncated_table = self.table[:idx+1]
-                            self.curr_seq_len += 1 
-                        else:
-                            break
-                    self.table_subword_len.append(len(inserted_toks))
-                    l += len(inserted_toks)
+                    self.table_id.extend(toks)
+                    self.table_subword_len.append(len(toks))
+                    l += len(toks)
                 self.table_word_len.append(l)
             self.table_mask_plm = [1] * len(self.table_id)
 
             self.column = [[db['column_types'][idx].lower()] + c.lower().split() for idx, (_, c) in enumerate(db['column_names'])]
-            self.truncated_column = self.column
             self.column_id, self.column_mask_plm, self.column_subword_len = [], [], []
             self.column_word_len = []
-            for idx, s in enumerate(self.column):
-                if self.curr_seq_len >= 255:
-                    self.is_long_seq =  True
-                    break
+            for s in self.column:
                 l = 0
                 for w in s:
                     toks = t.convert_tokens_to_ids(t.tokenize(w))
-                    inserted_toks = []
-                    for tok in toks:
-                        if self.curr_seq_len < 255:
-                            self.column_id.append(tok)
-                            inserted_toks.append(tok)
-                            self.truncated_column = self.column[:idx+1]
-                            self.curr_seq_len +=1
-                        else:
-                            break
-                    self.column_subword_len.append(len(inserted_toks))
-                    l += len(inserted_toks)
+                    self.column_id.extend(toks)
+                    self.column_subword_len.append(len(toks))
+                    l += len(toks)
                 self.column_word_len.append(l)
             self.column_mask_plm = [1] * len(self.column_id) + [0]
             self.column_id.append(t.sep_token_id)
-            self.curr_seq_len+=1
             self.input_id = self.question_id + self.table_id + self.column_id
             self.segment_id = [0] * len(self.question_id) + [1] * (len(self.table_id) + len(self.column_id)) \
                 if Example.plm != 'grappa_large_jnt' and not Example.plm.startswith('roberta') \
