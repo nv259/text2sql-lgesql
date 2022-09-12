@@ -88,12 +88,12 @@ class GraphInputLayerPLM(nn.Module):
                     question_output = self.plm_model(question_ids)[0]
                     table_output = self.plm_model(tables_ids)[0]
                     column_output = self.plm_model(column_ids)[0]
-                    long_seq_output = torch.concat((question_output,
+                    long_seq_output = torch.cat((question_output,
                                                     table_output,
                                                     column_output),
                                                     dim=1)
                     plm_outputs.append(long_seq_output)
-            outputs = torch.concat(plm_outputs, dim=0)
+            outputs = torch.cat(plm_outputs, dim=0)
 
         question, table, column = self.subword_aggregation(outputs, batch)
         input_dict = {
