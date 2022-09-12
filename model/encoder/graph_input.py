@@ -82,9 +82,9 @@ class GraphInputLayerPLM(nn.Module):
                     question_mask = batch.question_mask_plm[idx]
                     table_mask = batch.table_mask_plm[idx]
                     column_mask = batch.column_mask_plm[idx]
-                    question_ids = [sample_id.masked_select(question_mask)]
-                    tables_ids = [sample_id.masked_select(table_mask)]                    
-                    column_ids = [sample_id.masked_select(column_mask)]
+                    question_ids = torch.tensor([sample_id.masked_select(question_mask)], device=batch.device)
+                    tables_ids = torch.tensor([sample_id.masked_select(table_mask)], device=batch.device)                   
+                    column_ids = torch.tensor([sample_id.masked_select(column_mask)], device=batch.device)
                     question_output = self.plm_model(question_ids)
                     table_output = self.plm_model(tables_ids)
                     column_output = self.plm_model(column_ids)
