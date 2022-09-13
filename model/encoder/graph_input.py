@@ -68,7 +68,7 @@ class GraphInputLayerPLM(nn.Module):
                 new_plm_input = {"input_ids": None, "attention_mask": None, "token_type_ids": None, "position_ids": None}
                 if batch.input_lens[idx] <= 256:
                     new_plm_input["input_ids"] = sample_id[:256].unsqueeze(0)
-                    new_plm_input["attention_mask"] = batch.inputs["attention_mask"][:256].unsqueeze(0)
+                    new_plm_input["attention_mask"] = batch.inputs["attention_mask"][idx][:256].unsqueeze(0)
                     output = self.plm_model(**new_plm_input)[0]
                     # 1xseq_lenxhidden_size
                     output_size = output.size()
