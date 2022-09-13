@@ -73,7 +73,7 @@ class GraphInputLayerPLM(nn.Module):
                     # 1xseq_lenxhidden_size
                     output_size = output.size()
                     pad_tensor = output.new_zeros((output_size[0],
-                                                   256-output_size[1],
+                                                   batch.max_len-output_size[1],
                                                    output_size[ -1]))
                     # pad to return to the original tensor size
                     output = torch.cat((output, pad_tensor), dim=1)
