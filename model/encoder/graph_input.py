@@ -76,7 +76,7 @@ class GraphInputLayerPLM(nn.Module):
                                                    256-output_size[1],
                                                    output_size[ -1]))
                     # pad to return to the original tensor size
-                    output = torch.concat((output, pad_tensor), dim=1)
+                    output = torch.cat((output, pad_tensor), dim=1)
                     plm_outputs.append(output)
                 else:
                     question_mask = batch.question_mask_plm[idx]
