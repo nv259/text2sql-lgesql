@@ -89,7 +89,7 @@ def pad_single_seq_bert(ids, tokenizer, cls=True):
     else:
         padded_ids = temp_ids + [tokenizer.sep_token_id]
     if isinstance(ids, torch.Tensor):
-        return torch.tensor(padded_ids, dtype=ids.type())
+        return torch.tensor(padded_ids, dtype=ids.dtype)
     else: 
         return padded_ids
     
