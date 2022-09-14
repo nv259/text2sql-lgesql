@@ -86,7 +86,8 @@ class GraphInputLayerPLM(nn.Module):
                     # insert cls and sep tokens
                     question_ids = pad_single_seq_bert(question_ids, batch.tokenizer).unsqueeze(0)
                     tables_ids = sample_id.masked_select(table_mask).unsqueeze(0)                 
-                    column_ids = sample_id.masked_select(column_mask).unsqueeze(0)
+                    column_ids = sample_id.masked_select(column_mask)
+                    column_ids = pad_single_seq_bert(column_ids, batch.tokenizer, cls=False).unsqueeze(0)
                     question_output = self.plm_model(question_ids)[0]
                     table_output = self.plm_model(tables_ids)[0]
                     column_output = self.plm_model(column_ids)[0]
