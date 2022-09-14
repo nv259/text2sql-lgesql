@@ -81,6 +81,12 @@ def rnn_wrapper(encoder, inputs, lens, cell='lstm'):
         return out, (h.contiguous(), c.contiguous())
     return out, h.contiguous()
 
+def pad_single_seq_bert(ids, tokenizer, cls=True):
+    if cls:
+        return [tokenizer.cls_token_id] + ids + [tokenizer.sep_token_id]
+    else:
+        return ids + [tokenizer.sep_token_id]
+    
 class MultiHeadAttention(nn.Module):
 
     def __init__(self, hidden_size, q_size, kv_size, output_size, num_heads=8, bias=True, feat_drop=0.2, attn_drop=0.0):

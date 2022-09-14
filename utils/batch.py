@@ -20,6 +20,7 @@ def from_example_list_base(ex_list, device='cpu', train=True):
     batch = Batch(ex_list, device)
     plm = Example.plm
     pad_idx = Example.word_vocab[PAD] if plm is None else Example.tokenizer.pad_token_id
+    batch.tokenizer = Example.tokenizer
     
     question_lens = [len(ex.question) for ex in ex_list]
     batch.question_lens = torch.tensor(question_lens, dtype=torch.long, device=device)
