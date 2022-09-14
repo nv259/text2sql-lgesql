@@ -82,10 +82,16 @@ def rnn_wrapper(encoder, inputs, lens, cell='lstm'):
     return out, h.contiguous()
 
 def pad_single_seq_bert(ids, tokenizer, cls=True):
+    if isinstance(ids, torch.Tensor):
+        ids = ids.tolist()
     if cls:
-        return [tokenizer.cls_token_id] + ids + [tokenizer.sep_token_id]
+        padded_ids = [tokenizer.cls_token_id] + ids + [tokenizer.sep_token_id]
     else:
-        return ids + [tokenizer.sep_token_id]
+        padded_ids = ids + [tokenizer.sep_token_id]
+    if isinstance(ids, torch.Tensor):
+        return torch.tensor(padded_ids, dtype=ids.type())
+    else: 
+        return padded_ids
     
 class MultiHeadAttention(nn.Module):
 
