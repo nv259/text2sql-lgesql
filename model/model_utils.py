@@ -84,6 +84,7 @@ def rnn_wrapper(encoder, inputs, lens, cell='lstm'):
 def pad_single_seq_bert(ids, tokenizer, cls=True):
     if isinstance(ids, torch.Tensor):
         temp_ids = ids.tolist()
+    temp_ids = ids
     if cls:
         padded_ids = [tokenizer.cls_token_id] + temp_ids + [tokenizer.sep_token_id]
     else:
