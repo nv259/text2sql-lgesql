@@ -134,7 +134,7 @@ class GraphInputLayerPLM(nn.Module):
             outputs = self.plm_model(tokens_tensor)
             if is_cols:
                 # return the last encoded sep token 1x1x768
-                return outputs[0][:, 1: -1, :], outputs[0][-1, -1, :]
+                return outputs[0][:, 1: -1, :], outputs[0][-1:-1, -1:-1, :]
             return outputs[0][:, 1: -1, :] #remove cls and sep
         
          
