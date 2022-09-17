@@ -97,8 +97,8 @@ class GraphInputLayerPLM(nn.Module):
         question_ids = sample.question_id
         table_ids = sample.table_names_id
         column_ids = sample.column_names_id
-        cols = [pad_single_seq_bert(c) for c in column_ids]
-        tabs = [pad_single_seq_bert(t) for t in table_ids]
+        cols = [pad_single_seq_bert(c, batch.tokenizer) for c in column_ids]
+        tabs = [pad_single_seq_bert(t, batch.tokenizer) for t in table_ids]
         question_output = self._bert_encode(question_ids, batch)
         table_output = self._bert_encode(tabs, batch)
         table_output = torch.flatten(table_output, start_dim=0, end_dim=1)
