@@ -85,11 +85,14 @@ class Example():
             self.table = [['table'] + t.lower().split() for t in db['processed_table_names']]
             self.table_id, self.table_mask_plm, self.table_subword_len = [], [], []
             self.table_word_len = []
+            # use for handling long sequence 
+            self.table_names_id = []
             for s in self.table:
                 l = 0
                 for w in s:
                     toks = t.convert_tokens_to_ids(t.tokenize(w))
                     self.table_id.extend(toks)
+                    self.table_names_id.append(toks)
                     self.table_subword_len.append(len(toks))
                     l += len(toks)
                 self.table_word_len.append(l)
@@ -98,11 +101,14 @@ class Example():
             self.column = [[db['column_types'][idx].lower()] + c.lower().split() for idx, (_, c) in enumerate(db['column_names'])]
             self.column_id, self.column_mask_plm, self.column_subword_len = [], [], []
             self.column_word_len = []
+            # for handling long sequence
+            self.column_names_id = []
             for s in self.column:
                 l = 0
                 for w in s:
                     toks = t.convert_tokens_to_ids(t.tokenize(w))
                     self.column_id.extend(toks)
+                    self.column_names_id.append(toks)
                     self.column_subword_len.append(len(toks))
                     l += len(toks)
                 self.column_word_len.append(l)

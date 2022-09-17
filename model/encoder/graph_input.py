@@ -55,7 +55,7 @@ class GraphInputLayerPLM(nn.Module):
         self.rnn_layer = InputRNNLayer(self.config.hidden_size, hidden_size, cell='lstm', schema_aggregation=schema_aggregation)
 
     def pad_embedding_grad_zero(self, index=None):
-        pass
+        pass  
 
     def forward(self, batch):
         
@@ -79,22 +79,7 @@ class GraphInputLayerPLM(nn.Module):
                     output = torch.cat((output, pad_tensor), dim=1)
                     plm_outputs.append(output)
                 else:
-                    question_mask = batch.question_mask_plm[idx]
-                    table_mask = batch.table_mask_plm[idx]
-                    column_mask = batch.column_mask_plm[idx]
-                    question_ids = sample_id.masked_select(question_mask)
-                    # insert cls and sep tokens
-                    question_ids = pad_single_seq_bert(question_ids, batch.tokenizer).unsqueeze(0)
-                    tables_ids = sample_id.masked_select(table_mask).unsqueeze(0)                 
-                    column_ids = sample_id.masked_select(column_mask)
-                    column_ids = pad_single_seq_bert(column_ids, batch.tokenizer, cls=False).unsqueeze(0)
-                    question_output = self.plm_model(question_ids)[0]
-                    table_output = self.plm_model(tables_ids)[0]
-                    column_output = self.plm_model(column_ids)[0]
-                    long_seq_output = torch.cat((question_output,
-                                                    table_output,
-                                                    column_output),
-                                                    dim=1)
+                    long_seq_output = self.encode_long_seq_input(batch, idx)
                     plm_outputs.append(long_seq_output)
             outputs = torch.cat(plm_outputs, dim=0)
 
@@ -106,7 +91,53 @@ class GraphInputLayerPLM(nn.Module):
         }
         inputs = self.rnn_layer(input_dict, batch)
         return inputs
+    
+    def encode_long_seq_input(self, batch, idx):
+        sample = batch.examples[idx]
+        question_ids = sample.question_id
+        table_ids = sample.table_names_id
+        column_ids = sample.column_names_id
+        cols = [pad_single_seq_bert(c) for c in column_ids]
+        tabs = [pad_single_seq_bert(t) for t in table_ids]
+        question_output = self._bert_encode(question_ids, batch)
+        table_output = self._bert_encode(tabs, batch)
+        table_output = torch.flatten(table_output, start_dim=0, end_dim=1)
+        col_output, last_sep = self._bert_encode(cols, batch, True)
+        col_output = torch.flatten(col_output, start_dim=0, end_dim=1)
+        col_output = torch.cat((col_output, last_sep.squeeze(1)))
+        final_output = torch.cat((question_output,
+                                  table_output,
+                                  col_output),
+                                 dim=0)
+        # pad if len of sample < max len of batch
+        output_len = final_output.size(0)
+        if output_len < batch.max_len:
+            pad_tensor = torch.zeros((batch.max_len-output_len,
+                                      self.config.hidden_size))
+            final_output = torch.cat((final_output, pad_tensor), dim=0)
+        return final_output
+        
+    # adapted from Ratsql
+    def _bert_encode(self, toks, batch, is_cols=False):
+        if not isinstance(toks[0], list):  # encode question words
+            tokens_tensor = torch.tensor([toks]).to(batch.device)
+            outputs = self.plm_model(tokens_tensor)
+            return outputs[0][0, :]  
+        else:
+            max_len = max([len(it) for it in toks])
+            tok_ids = []
+            for item_toks in toks:
+                item_toks = item_toks + [batch.tokenizer.pad_token_id] * (max_len - len(item_toks))
+                tok_ids.append(item_toks)
 
+            tokens_tensor = torch.tensor(tok_ids).to(batch.device)
+            outputs = self.plm_model(tokens_tensor)
+            if is_cols:
+                # return the last encoded sep token 1x1x768
+                return outputs[0][:, 1: -1, :], outputs[0][-1, -1, :]
+            return outputs[0][:, 1: -1, :] #remove cls and sep
+        
+         
 class SubwordAggregation(nn.Module):
     """ Map subword or wordpieces into one fixed size vector based on aggregation method
     """
