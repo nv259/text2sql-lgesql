@@ -97,18 +97,23 @@ class GraphInputLayerPLM(nn.Module):
         question_ids = sample.question_id
         table_ids = sample.table_names_id
         column_ids = sample.column_names_id
-        cols = [pad_single_seq_bert(c, batch.tokenizer) for c in column_ids]
+        table_mask = torch.tensor(lens2mask(sample.table_word_len)).to(batch.device)
+        col_mask = torch.tensor(lens2mask(sample.column_word_len)).to(batch.device)
         tabs = [pad_single_seq_bert(t, batch.tokenizer) for t in table_ids]
+        cols = [pad_single_seq_bert(c, batch.tokenizer) for c in column_ids]
         question_output = self._bert_encode(question_ids, batch)
+        # number of table x max table name len x hidden size
         table_output = self._bert_encode(tabs, batch)
-        table_output = torch.flatten(table_output, start_dim=0, end_dim=1)
-        col_output, last_sep = self._bert_encode(cols, batch, True)
-        col_output = torch.flatten(col_output, start_dim=0, end_dim=1)
-        col_output = torch.cat((col_output, last_sep.squeeze(1)))
+        tabs = tabs.masked_select(table_mask.unsqueeze(-1))
+        tabs = tabs.reshape((len(sample.table_id), self.config.hidden_size))
+        col_output, last_sep = self._bert_en_code(cols, batch, True, sample)
+        col_output = col_output.masked_select(col_mask.unsqueeze(-1))
+        col_output = col_output.reshape((len(sample.column_id), self.config.hidden_size))
+        col_output = torch.cat((col_output, last_sep.squeeze(1)), dim=0)
         final_output = torch.cat((question_output,
                                   table_output,
                                   col_output),
-                                 dim=0)
+                                  dim=0)
         # pad if len of sample < max len of batch
         output_len = final_output.size(0)
         if output_len < batch.max_len:
@@ -118,7 +123,7 @@ class GraphInputLayerPLM(nn.Module):
         return final_output
         
     # adapted from Ratsql
-    def _bert_encode(self, toks, batch, is_cols=False):
+    def _bert_encode(self, toks, batch, is_cols=False, sample=None):
         if not isinstance(toks[0], list):  # encode question words
             tokens_tensor = torch.tensor([toks]).to(batch.device)
             outputs = self.plm_model(tokens_tensor)
@@ -132,9 +137,10 @@ class GraphInputLayerPLM(nn.Module):
 
             tokens_tensor = torch.tensor(tok_ids).to(batch.device)
             outputs = self.plm_model(tokens_tensor)
-            if is_cols:
+            if is_cols and sample:
                 # return the last encoded sep token 1x1x768
-                return outputs[0][:, 1: -1, :], outputs[0][-1:-1, -1:-1, :]
+                last_sep_idx = len(sample.column_word_len[-1]) + 1 
+                return outputs[0][:, 1: -1, :], outputs[0][-1:-1, last_sep_idx, :]
             return outputs[0][:, 1: -1, :] #remove cls and sep
         
          
