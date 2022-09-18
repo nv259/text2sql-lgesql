@@ -120,7 +120,7 @@ class GraphInputLayerPLM(nn.Module):
             pad_tensor = torch.zeros((batch.max_len-output_len,
                                       self.config.hidden_size)).to(batch.device)
             final_output = torch.cat((final_output, pad_tensor), dim=0)
-        return final_output
+        return final_output.unsqueeze(0)
         
     # adapted from Ratsql
     def _bert_encode(self, toks, batch, is_cols=False, sample=None):
