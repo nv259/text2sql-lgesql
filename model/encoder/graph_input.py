@@ -97,8 +97,8 @@ class GraphInputLayerPLM(nn.Module):
         question_ids = sample.question_id
         table_ids = sample.table_names_id
         column_ids = sample.column_names_id
-        table_mask = torch.tensor(lens2mask(sample.table_word_len)).to(batch.device)
-        col_mask = torch.tensor(lens2mask(sample.column_word_len)).to(batch.device)
+        table_mask = lens2mask(torch.tensor(sample.table_word_len).to(batch.device))
+        col_mask = lens2mask(torch.tensor(sample.column_word_len).to(batch.device))
         tabs = [pad_single_seq_bert(t, batch.tokenizer) for t in table_ids]
         cols = [pad_single_seq_bert(c, batch.tokenizer) for c in column_ids]
         question_output = self._bert_encode(question_ids, batch)
