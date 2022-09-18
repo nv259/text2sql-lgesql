@@ -104,8 +104,8 @@ class GraphInputLayerPLM(nn.Module):
         question_output = self._bert_encode(question_ids, batch)
         # number of table x max table name len x hidden size
         table_output = self._bert_encode(tabs, batch)
-        tabs = table_output.masked_select(table_mask.unsqueeze(-1))
-        tabs = tabs.reshape((len(sample.table_id), self.config.hidden_size))
+        table_output = table_output.masked_select(table_mask.unsqueeze(-1))
+        table_output = table_output.reshape((len(sample.table_id), self.config.hidden_size))
         col_output, last_sep = self._bert_encode(cols, batch, True, sample)
         col_output = col_output.masked_select(col_mask.unsqueeze(-1))
         col_output = col_output.reshape((-1, self.config.hidden_size))
