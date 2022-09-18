@@ -106,7 +106,7 @@ class GraphInputLayerPLM(nn.Module):
         table_output = self._bert_encode(tabs, batch)
         tabs = table_output.masked_select(table_mask.unsqueeze(-1))
         tabs = tabs.reshape((len(sample.table_id), self.config.hidden_size))
-        col_output, last_sep = self._bert_en_code(cols, batch, True, sample)
+        col_output, last_sep = self._bert_encode(cols, batch, True, sample)
         col_output = col_output.masked_select(col_mask.unsqueeze(-1))
         col_output = col_output.reshape((len(sample.column_id), self.config.hidden_size))
         col_output = torch.cat((col_output, last_sep.squeeze(1)), dim=0)
