@@ -118,7 +118,7 @@ class GraphInputLayerPLM(nn.Module):
         output_len = final_output.size(0)
         if output_len < batch.max_len:
             pad_tensor = torch.zeros((batch.max_len-output_len,
-                                      self.config.hidden_size))
+                                      self.config.hidden_size)).to(batch.device)
             final_output = torch.cat((final_output, pad_tensor), dim=0)
         return final_output
         
