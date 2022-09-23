@@ -27,7 +27,6 @@
 import json
 import sqlite3
 from nltk import word_tokenize
-from utils.batch import add_underscore
 
 CLAUSE_KEYWORDS = ('select', 'from', 'where', 'group', 'order', 'limit', 'intersect', 'union', 'except')
 JOIN_KEYWORDS = ('join', 'on', 'as')
@@ -112,6 +111,14 @@ def get_schema_from_json(fpath):
         schema[table] = cols
 
     return schema
+
+# add eval_col_name field, which replace space in column names by "_"
+def add_underscore(text):
+    assert isinstance(text, str)
+    if text[0] != "\\":
+        return "_".join(text.split(" "))
+    else:
+        return text
 
 def get_schema_from_tables_file(fpath):
     with open(fpath) as f:
