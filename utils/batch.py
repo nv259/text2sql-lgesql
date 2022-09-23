@@ -122,6 +122,14 @@ def from_example_list_text2sql(ex_list, device='cpu', train=True, **kwargs):
         batch.max_action_num = max([len(ex.tgt_action) for ex in ex_list])
     return batch
 
+ # add eval_col_name field, which replace space in column names by "_"
+def add_underscore(text):
+    assert isinstance(text, str)
+    if text[0] != "\\":
+        return "_".join(text.split(" "))
+    else:
+        return text
+
 class Batch():
 
     def __init__(self, examples, device='cpu'):

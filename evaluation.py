@@ -25,7 +25,7 @@ import sqlite3
 import traceback
 import argparse
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from process_sql import tokenize, get_schema, get_tables_with_alias, Schema, get_sql
+from process_sql import tokenize, get_schema, get_schema_from_tables_file, get_tables_with_alias, Schema, get_sql
 
 # Flag to disable value evaluation
 DISABLE_VALUE = True
@@ -503,7 +503,8 @@ def evaluate(gold, predict, db_dir, etype, kmaps):
         g_str, db = g
         db_name = db
         db = os.path.join(db_dir, db, db + ".sqlite")
-        schema = Schema(get_schema(db))
+        _tables_path = os.path.join(os.path.dirname(db_dir), "tables.json")
+        schema = Schema(get_schema_from_tables_file(_tables_path))
         # .schema: map lowercased raw tab name to lowercased raw col name list
         # .idMap: map tab name to __tab__, tab.col to __tab.col__, * to __all__, all lowercased
         g_sql = get_sql(schema, g_str)
