@@ -27,13 +27,23 @@ def process_tables(processor, tables_list, output_path=None, verbose=False):
         pickle.dump(tables, open(output_path, 'wb'))
     return tables
 
+def verify_seq_len(entry):
+    num_query_word = len(entry['query_toks'])
+    num_table_word = sum(len(t) for t in tables[entry['db_id']]['processed_table_toks'])
+    num_col_word = sum(len(c) for c in tables[entry['db_id']]['processed_column_toks'])
+    if (num_query_word + num_table_word + num_col_word) > 256:
+        return False
+    else:
+        return True
+
 def process_dataset(processor, dataset, tables, output_path=None, skip_large=False, verbose=False):
     from utils.constants import GRAMMAR_FILEPATH
     grammar = ASDLGrammar.from_filepath(GRAMMAR_FILEPATH)
     trans = TransitionSystem.get_class_by_lang('sql')(grammar)
     processed_dataset = []
     for idx, entry in enumerate(dataset):
-        if skip_large and len(tables[entry['db_id']]['column_names']) > 100: continue
+        # if skip_large and len(tables[entry['db_id']]['column_names']) > 100: continue
+        if skip_large and verify_seq_len(entry): continue
         if verbose:
             print('*************** Processing %d-th sample **************' % (idx))
         entry = process_example(processor, entry, tables[entry['db_id']], trans, verbose=verbose)
