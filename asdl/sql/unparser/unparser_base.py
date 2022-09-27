@@ -2,6 +2,7 @@
 
 from asdl.asdl import ASDLGrammar, ASDLConstructor, ASDLProduction
 from asdl.asdl_ast import RealizedField, AbstractSyntaxTree
+from process_sql import add_underscore
 
 class UnParser():
 
@@ -156,10 +157,20 @@ class UnParser():
         agg = col_unit_ast.production.constructor.name
         col_id = int(col_unit_ast.fields[0].value)
         tab_id, col_name = db['column_names_original'][col_id]
+        col_name = self.add_underscore_to_name(col_name)
         if col_id != 0:
-            tab_name = db['table_names_original'][tab_id]
+            tab_name = self.add_underscore_to_name(
+                db['table_names_original'][tab_id])
             col_name = tab_name + '.' + col_name
         if agg == 'None':
             return col_name
         else: # Max/Min/Count/Sum/Avg
             return agg.upper() + '(' + col_name + ')'
+
+    @staticmethod
+    def add_underscore_to_name(name):
+        assert isinstance(name, str)
+        if name[0] != "\\":
+            return "_".join(name.split(" "))
+        else:
+            return name
