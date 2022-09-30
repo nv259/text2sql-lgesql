@@ -35,7 +35,7 @@ class Evaluator():
             question = dataset[idx].ex['question']
             # gold_sql = dataset[idx].query
             # add underscore for vietnamese query
-            gold_sql = " ".join([self.add_underscore_to_name(tok) for tok in dataset[idx].query_toks])
+            gold_sql = " ".join([self.add_underscore_to_name(tok) for tok in dataset[idx].ex['query_toks']])
             db = dataset[idx].db
             
             for b_id, hyp in enumerate(pred):
@@ -148,7 +148,7 @@ class Evaluator():
     def sql_acc(self, pred_hyps, dataset, output_path, etype, use_checker):
         pred_sqls, ref_sqls = [], [self.add_underscore_to_name(tok) 
                                    for ex in dataset
-                                   for tok in ex.query_toks]
+                                   for tok in ex['query_tokens']]
         dbs = [ex.db for ex in dataset]
         for idx, hyp in enumerate(pred_hyps):
             if use_checker:
