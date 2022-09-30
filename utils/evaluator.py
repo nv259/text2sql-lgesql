@@ -32,7 +32,12 @@ class Evaluator():
         for each in ['easy', 'medium', 'hard', 'extra', 'all']:
             scores[each] = [0, 0.] # first is count, second is total score
         for idx, pred in enumerate(pred_hyps):
-            question, gold_sql, db = dataset[idx].ex['question'], dataset[idx].query, dataset[idx].db
+            question = dataset[idx].ex['question']
+            # gold_sql = dataset[idx].query
+            # add underscore for vietnamese query
+            gold_sql = " ".join([self.add_underscore_to_name(tok) for tok in dataset[idx].query_toks])
+            db = dataset[idx].db
+            
             for b_id, hyp in enumerate(pred):
                 pred_sql = self.transition_system.ast_to_surface_code(hyp.tree, db)
                 score, hardness = self.single_acc(pred_sql, gold_sql, db['db_id'], etype)
@@ -182,6 +187,13 @@ class Evaluator():
             best_ast = hyps[0].tree
             sql = self.transition_system.ast_to_surface_code(best_ast, db)
         return sql
+    @staticmethod
+    def add_underscore_to_name(name):
+        assert isinstance(name, str)
+        if name[0] != "\\":
+            return "_".join(name.split(" "))
+        else:
+            return name
 
 class Checker():
 
