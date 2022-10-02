@@ -148,7 +148,7 @@ class Evaluator():
     def sql_acc(self, pred_hyps, dataset, output_path, etype, use_checker):
         pred_sqls, ref_sqls = [], [self.add_underscore_to_name(tok) 
                                    for ex in dataset
-                                   for tok in ex.ex['query_tokens']]
+                                   for tok in ex.ex['query_toks']]
         dbs = [ex.db for ex in dataset]
         for idx, hyp in enumerate(pred_hyps):
             if use_checker:
