@@ -67,7 +67,7 @@ class GraphProcessor():
         match_ids = [idx for idx, r in enumerate(graph.global_edges) if 'match' in r[2]]
         src, dst, eids = lg.edges(form='all', order='eid')
         eids = [e for u, v, e in zip(src.tolist(), dst.tolist(), eids.tolist()) if not (u in match_ids and v in match_ids)]
-        graph.lg = lg.edge_subgraph(eids, preserve_nodes=True).remove_self_loop().add_self_loop()
+        graph.lg = lg.edge_subgraph(eids, relabel_nodes=False).remove_self_loop().add_self_loop()
         ex['graph'] = graph
         return ex
 
