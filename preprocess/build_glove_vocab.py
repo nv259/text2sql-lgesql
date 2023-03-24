@@ -2,7 +2,6 @@
 import argparse, os, sys, pickle, json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from collections import Counter, OrderedDict
-from torchtext.vocab import vocab
 
 def construct_vocab_from_dataset(*data_paths, table_path='data/tables.bin', mwf=4, reference_file=None, output_path=None, sep='\t'):
     words = []
