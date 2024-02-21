@@ -3,3 +3,7 @@ embeddings==0.0.8
 transformers==4.6.1
 stanza==1.1.1
 nltk==3.5
+
+# for vi language
+vncorenlp
+py_vncorenlp

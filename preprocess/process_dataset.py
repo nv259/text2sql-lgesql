@@ -32,9 +32,9 @@ def verify_seq_len(entry):
     num_table_word = sum(len(t) for t in tables[entry['db_id']]['processed_table_toks'])
     num_col_word = sum(len(c) for c in tables[entry['db_id']]['processed_column_toks'])
     if (num_query_word + num_table_word + num_col_word) > 256:
-        return False
-    else:
         return True
+    else:
+        return False
 
 def process_dataset(processor, dataset, tables, output_path=None, skip_large=False, verbose=False):
     from utils.constants import GRAMMAR_FILEPATH

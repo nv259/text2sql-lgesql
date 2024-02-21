@@ -10,11 +10,11 @@ vocab_glove='pretrained_models/word2vec_vi_words_300d/word2vec_vi_words_300dims.
 vocab='pretrained_models/word2vec_vi_words_300d/vocab.txt'
 
 echo "Start to preprocess the original train dataset ..."
-python3 -u preprocess/process_dataset.py --dataset_path ${train_data} --raw_table_path ${table_data} --table_path ${table_out} --output_path 'data/train.bin' --skip_large #--verbose > train.log
+python3 -u preprocess/process_dataset.py --dataset_path ${train_data} --raw_table_path ${table_data} --table_path ${table_out} --output_path 'data/train.bin' --skip_large --verbose > train.log
 echo "Start to preprocess the original dev dataset ..."
 python3 -u preprocess/process_dataset.py --dataset_path ${dev_data} --table_path ${table_out} --output_path 'data/dev.bin' #--verbose > dev.log
 echo "Start to build word vocab for the dataset ..."
-python3 -u preprocess/build_glove_vocab.py --data_paths 'data/train.bin' --table_path ${table_out} --reference_file ${vocab_glove} --mwf 4 --output_path ${vocab}
+# python3 -u preprocess/build_glove_vocab.py --data_paths 'data/train.bin' --table_path ${table_out} --reference_file ${vocab_glove} --mwf 4 --output_path ${vocab}
 echo "Start to construct graphs for the dataset ..."
 python3 -u preprocess/process_graphs.py --dataset_path 'data/train.bin' --table_path ${table_out} --method 'lgesql' --output_path ${train_out}
 python3 -u preprocess/process_graphs.py --dataset_path 'data/dev.bin' --table_path ${table_out} --method 'lgesql' --output_path ${dev_out}

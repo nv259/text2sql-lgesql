@@ -90,7 +90,7 @@ class RGATLayer(nn.Module):
         g.apply_edges(scaled_exp('score', math.sqrt(self.d_k)))
         # Update node state
         g.update_all(src_sum_edge_mul_edge('v', 'e', 'score', 'v'), fn.sum('v', 'wv'))
-        g.update_all(fn.copy_edge('score', 'score'), fn.sum('score', 'z'), div_by_z('wv', 'z', 'o'))
+        g.update_all(fn.copy_e('score', 'score'), fn.sum('score', 'z'), div_by_z('wv', 'z', 'o'))
         out_x = g.ndata['o']
         return out_x
 

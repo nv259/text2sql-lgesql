@@ -11,3 +11,5 @@ data
 log
 exp
 *.sbatch
+VnCoreNLP/
+pretrained/

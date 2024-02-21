@@ -49,7 +49,7 @@ class GraphProcessor():
             }, num_nodes_dict={'question': q_num, 'schema': s_num}, idtype=torch.int32
         )
         t_num = len(db['processed_table_toks'])
-        def check_node(i):
+        def check_node(i): # TODO: clarify check_node() function, not align with relations list # where q in [0->q_num), t in [q_num, q_num + t_num), c in [q_num + t_num, q_num + t_num + c_num)
             if i < t_num and i in ex['used_tables']:
                 return 1.0
             elif i >= t_num and i - t_num in ex['used_columns']:
@@ -64,7 +64,7 @@ class GraphProcessor():
         graph = ex['graph']
         lg = graph.local_g.line_graph(backtracking=False)
         # prevent information propagate through matching edges
-        match_ids = [idx for idx, r in enumerate(graph.global_edges) if 'match' in r[2]]
+        match_ids = [idx for idx, r in enumerate(graph.global_edges) if 'match' in r[2]] # nomatch, partialmatch, exactmatch
         src, dst, eids = lg.edges(form='all', order='eid')
         eids = [e for u, v, e in zip(src.tolist(), dst.tolist(), eids.tolist()) if not (u in match_ids and v in match_ids)]
         graph.lg = lg.edge_subgraph(eids, relabel_nodes=False).remove_self_loop().add_self_loop()

@@ -38,7 +38,7 @@ def quote_normalization(question):
 
 class Preprocessor():
 
-    def __init__(self, db_dir='data/database', db_content=False, vncore_link='VnCoreNLP/VnCoreNLP-1.1.1.jar'):
+    def __init__(self, db_dir='data/database', db_content=False, vncore_link='/media/doublemint/SharedDisk/repo/text2sql/text2sql-lgesql/VnCoreNLP/VnCoreNLP-1.1.1.jar'):
         super(Preprocessor, self).__init__()
         self.db_dir = db_dir
         self.db_content = db_content

@@ -133,6 +133,6 @@ class DGLMHA(nn.Module):
         g.apply_edges(scaled_exp('score', math.sqrt(self.d_k)))
         # Update node state
         g.update_all(fn.src_mul_edge('v', 'score', 'v'), fn.sum('v', 'wv'))
-        g.update_all(fn.copy_edge('score', 'score'), fn.sum('score', 'z'), div_by_z('wv', 'z', 'o'))
+        g.update_all(fn.copy_e('score', 'score'), fn.sum('score', 'z'), div_by_z('wv', 'z', 'o'))
         out_x = g.nodes['schema'].data['o']
         return out_x
