@@ -68,7 +68,7 @@ class GraphFactory():
         print() 
             # if ex.global_g.idtype == torch.int64:
             #     print(ex.global_g)
-        bg.global_g = dgl.batch([ex.global_g for ex in graph_list]).to(device) # TODO: expect torch.int32, got torch.int64
+        bg.global_g = dgl.batch([ex.global_g.int() for ex in graph_list]).to(device) # TODO: expect torch.int32, got torch.int64
         print('bg.global_g._batch_num_nodes', bg.global_g._batch_num_nodes)
         bg.global_edges = torch.cat([ex.global_edges for ex in graph_list], dim=0).to(device)
         if train:
