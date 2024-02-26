@@ -1,6 +1,6 @@
 task=lgesql_large
 seed=999
-device=-1
+device=0
 testing='' #'--testing'
 read_model_path=''
 
@@ -34,8 +34,8 @@ no_parent_field_embed=''
 no_parent_field_type_embed=''
 no_parent_state=''
 
-batch_size=4
-grad_accumulate=2
+batch_size=20
+grad_accumulate=5
 lr=1e-4
 layerwise_decay=0.8
 l2=0.1
