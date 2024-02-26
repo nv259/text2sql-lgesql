@@ -10,6 +10,7 @@ from utils.batch import Batch
 from utils.optimization import set_optimizer
 from model.model_utils import Registrable
 from model.model_constructor import *
+from tqdm import tqdm
 
 # initialization params, output path, logger, random seed and torch.device
 args = init_args(sys.argv[1:])
@@ -82,14 +83,14 @@ if not args.testing:
         epoch_loss, epoch_gp_loss, count = 0, 0, 0
         np.random.shuffle(train_index)
         model.train()
-        for j in range(0, nsamples, step_size):
+        for j in tqdm(range(0, nsamples, step_size)):
             count += 1
             cur_dataset = [train_dataset[k] for k in train_index[j: j + step_size]]
             current_batch = Batch.from_example_list(cur_dataset, device, train=True, smoothing=args.smoothing)
             loss, gp_loss = model(current_batch) # see utils/batch.py for batch elements
             epoch_loss += loss.item()
             epoch_gp_loss += gp_loss.item()
-            # print("Minibatch loss: %.4f" % (loss.item()))
+            # print("Minibatch loss: %.4f" % (loss.item()))ex.global_g.idtype
             loss += gp_loss
             loss.backward()
             if count == args.grad_accumulate or j + step_size >= nsamples:
