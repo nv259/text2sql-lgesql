@@ -63,13 +63,7 @@ class GraphFactory():
         bg.local_g = dgl.batch([ex.local_g for ex in graph_list]).to(device)
         # bg.local_edges = torch.cat([ex.local_edges for ex in graph_list], dim=0).to(device)
         bg.local_mask = torch.cat([ex.graph.local_mask for ex in ex_list], dim=0).to(device)
-        # for ex in graph_list:
-        #     print(ex.global_g.number_of_nodes(), end='\t')
-        # print() 
-            # if ex.global_g.idtype == torch.int64:
-            #     print(ex.global_g)
         bg.global_g = dgl.batch([ex.global_g.int() for ex in graph_list]).to(device) # TODO: expect torch.int32, got torch.int64
-        print('bg.global_g._batch_num_nodes', bg.global_g._batch_num_nodes)
         bg.global_edges = torch.cat([ex.global_edges for ex in graph_list], dim=0).to(device)
         if train:
             bg.question_mask = torch.cat([ex.question_mask for ex in graph_list], dim=0).to(device)
