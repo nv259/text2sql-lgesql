@@ -41,7 +41,7 @@ def add_argument_encoder(arg_parser):
     arg_parser.add_argument('--local_and_nonlocal', choices=['mmc', 'msde', 'local', 'global'], default='mmc', 
         help='how to integrate local and non-local relations: mmc -> multi-head multi-view concatenation ; msde -> mixed static and dynamic embeddings')
     arg_parser.add_argument('--output_model', choices=['without_pruning', 'with_pruning'], default='without_pruning', help='whether add graph pruning')
-    arg_parser.add_argument('--plm', type=str, choices=['phobert-base', 'bert-base-uncased', 'bert-large-uncased', 'bert-large-uncased-whole-word-masking',
+    arg_parser.add_argument('--plm', type=str, choices=['phobert-base', 'velectra-base-discriminator-cased', 'bert-base-uncased', 'bert-large-uncased', 'bert-large-uncased-whole-word-masking',
         'roberta-base', 'roberta-large', 'grappa_large_jnt', 'electra-base-discriminator', 'electra-large-discriminator'], help='pretrained model name')
     arg_parser.add_argument('--subword_aggregation', choices=['mean-pooling', 'max-pooling', 'attentive-pooling'], default='attentive-pooling', help='aggregate subword feats from PLM')
     arg_parser.add_argument('--schema_aggregation', choices=['mean-pooling', 'max-pooling', 'attentive-pooling', 'head+tail'], default='head+tail', help='aggregate schema words feats')
